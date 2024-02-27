@@ -89,4 +89,62 @@ class Media extends AbstractController
 
         return null;
     }
+
+    /**
+     * Upload video to Twitter in chunks
+     * @param string $filePath Relative path of the video file
+     * @param string $mime Mime type of the video
+     * @return void
+     * @throws JsonException
+     * @throws Exception
+     */
+    public function uploadChunkVideo(string $filePath = "", $mime = ""): ?array
+    {
+        try {
+            // Step 1: INIT - Initialize media upload
+            $initResponse = $this->client->post('media/upload.json', [
+                'query' => [
+                    'command' => 'INIT',
+                    'media_type' => $mime,
+                    'total_bytes' => filesize($filePath),
+                ],
+            ]);
+            $mediaId = json_decode($initResponse->getBody()->getContents(), true)['media_id'];
+
+            // Step 2: APPEND - Append media segments
+            $segmentIndex = 0;
+            $segmentSize = 5 * 1024 * 1024; // 5 MB segment size (adjust as needed)
+            $file = fopen($filePath, 'rb');
+
+            while (!feof($file)) {
+                $chunk = fread($file, $segmentSize);
+                $this->client->post('media/upload.json', [
+                    'query' => [
+                        'command' => 'APPEND',
+                        'media_id' => $mediaId,
+                        'segment_index' => $segmentIndex,
+                    ],
+                    'body' => $chunk,
+                ]);
+                $segmentIndex++;
+            }
+            fclose($file);
+
+            // Step 3: FINALIZE - Finalize media upload
+            $finalizeResponse = $this->client->post('media/upload.json', [
+                'query' => [
+                    'command' => 'FINALIZE',
+                    'media_id' => $mediaId,
+                ],
+            ]);
+
+            // Get the response body
+            $responseBody = $finalizeResponse->getBody()->getContents();
+            return $responseBody;
+        } catch (Exception $e) {
+            throw new \RuntimeException($e->getResponse()->getBody()->getContents(), $e->getCode());
+        }
+
+        return null;
+    }
 }

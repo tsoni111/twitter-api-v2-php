@@ -1,5 +1,5 @@
 {
-  "name": "noweh/twitter-api-v2-php",
+  "name": "tsoni111/twitter-api-v2-php",
   "description": "This library provides methods for sending messages to Twitter and receiving statuses.",
   "keywords": ["twitter", "PHP", "API"],
   "minimum-stability": "stable",
@@ -7,11 +7,8 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "Julien Schmitt",
-      "email": "jschmitt95@protonmail.com"
-    }, {
-      "name": "Martin Zeitler",
-      "homepage": "https://github.com/syslogic"
+      "name": "Tejash Soni",
+      "email": "tejashsoni111@gmail.com"
     }
   ],
   "require": {
